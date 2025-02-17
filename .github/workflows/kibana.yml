@@ -1,4 +1,5 @@
 - name: Install Kibana 7.1.x
+
   hosts: kibana
   become: yes
   vars:
