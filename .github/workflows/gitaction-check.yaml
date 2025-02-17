@@ -24,16 +24,15 @@ jobs:
 
       - name: Run Ansible Playbook (Elasticsearch)
         run: |
-          
+          export ANSIBLE_HOST_KEY_CHECKING=False
           ansible-playbook -i .github/workflows/inventory.ini playbook/elasticsearch.yml
-
 
       - name: Run Ansible Playbook (Logstash)
         run: |
-          set -e
-           ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i .github/workflows/inventory.ini playbook/logstash.yml
-          
+          export ANSIBLE_HOST_KEY_CHECKING=False
+          ansible-playbook -i .github/workflows/inventory.ini playbook/logstash.yml
+
       - name: Run Ansible Playbook (Kibana)
         run: |
-          set -e
+          export ANSIBLE_HOST_KEY_CHECKING=False
           ansible-playbook -i .github/workflows/inventory.ini playbook/kibana.yml -vv
