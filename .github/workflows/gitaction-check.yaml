@@ -14,8 +14,8 @@ jobs:
 
       - name: Install Ansible
         run: |
-          yum install -y epel-release
-          yum install -y ansible
+          sudo yum install -y epel-release
+          sudo yum install -y ansible
 
       - name: Run Ansible Playbook (Elasticsearch)
         run: ansible-playbook -i inventory.ini playbooks/elasticsearch.yml
