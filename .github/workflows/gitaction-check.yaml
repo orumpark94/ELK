@@ -7,13 +7,21 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted  # 내부 서버에서 실행
+    runs-on: self-hosted
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Install Ansible
-        run: sudo yum install -y ansible
+        run: |
+          sudo yum install -y epel-release
+          sudo yum install -y ansible
 
-      - name: Run Ansible Playbook
-        run: ansible-playbook -i inventory.ini elk-playbook.yml
+      - name: Run Ansible Playbook (Elasticsearch)
+        run: ansible-playbook -i inventory.ini playbooks/elasticsearch.yml
+
+      - name: Run Ansible Playbook (Logstash)
+        run: ansible-playbook -i inventory.ini playbooks/logstash.yml
+
+      - name: Run Ansible Playbook (Kibana)
+        run: ansible-playbook -i inventory.ini playbooks/kibana.yml
