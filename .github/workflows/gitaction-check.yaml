@@ -24,16 +24,16 @@ jobs:
 
       - name: Run Ansible Playbook (Elasticsearch)
         run: |
-          set -e
-          ansible-playbook -i inventory.ini playbook/elasticsearch.yml
+          
+          ansible-playbook -i .github/workflows/inventory.ini playbook/elasticsearch.yml
 
 
       - name: Run Ansible Playbook (Logstash)
         run: |
           set -e
-          ansible-playbook -i inventory.ini playbook/logstash.yml -vv
+          ansible-playbook -i .github/workflows/inventory.ini playbook/logstash.yml
 
       - name: Run Ansible Playbook (Kibana)
         run: |
           set -e
-          ansible-playbook -i inventory.ini playbook/kibana.yml -vv
+          ansible-playbook -i .github/workflows/inventory.ini playbook/kibana.yml -vv
