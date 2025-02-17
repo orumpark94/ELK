@@ -1,0 +1,19 @@
+name: Deploy ELK Stack
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted  # 내부 서버에서 실행
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: sudo yum install -y ansible
+
+      - name: Run Ansible Playbook
+        run: ansible-playbook -i inventory.ini elk-playbook.yml
