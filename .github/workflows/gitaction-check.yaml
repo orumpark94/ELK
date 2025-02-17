@@ -45,3 +45,5 @@ jobs:
             ansible-playbook -i .github/workflows/inventory.ini playbook/logstash.yml
             ansible-playbook -i .github/workflows/inventory.ini playbook/kibana.yml
           EOF
+
+          
