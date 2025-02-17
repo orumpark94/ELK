@@ -18,10 +18,10 @@ jobs:
           sudo yum install -y ansible
 
       - name: Run Ansible Playbook (Elasticsearch)
-        run: ansible-playbook -i inventory.ini elasticsearch.yml
+        run: ansible-playbook -i inventory.ini elasticsearch
 
       - name: Run Ansible Playbook (Logstash)
-        run: ansible-playbook -i inventory.ini logstash.yml
+        run: ansible-playbook -i inventory.ini logstash
 
       - name: Run Ansible Playbook (Kibana)
-        run: ansible-playbook -i inventory.ini kibana.yml
+        run: ansible-playbook -i inventory.ini kibana
