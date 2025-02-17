@@ -13,20 +13,29 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-        - name: Debug: Check Repository Files
-          run: ls -lR
+      - name: Debug: Check Repository Files
+        run: ls -lR
 
-
-      - name: Install Ansible
+      - name: Install Ansible (if not installed)
         run: |
-          sudo yum install -y epel-release
-          sudo yum install -y ansible
+          if ! command -v ansible &> /dev/null; then
+            sudo yum install -y epel-release
+            sudo yum install -y ansible
+          else
+            echo "Ansible is already installed"
+          fi
 
       - name: Run Ansible Playbook (Elasticsearch)
-        run: ansible-playbook -i inventory.ini elasticsearch.yml
+        run: |
+          set -e
+          ansible-playbook -i inventory.ini elasticsearch.yml -vv
 
       - name: Run Ansible Playbook (Logstash)
-        run: ansible-playbook -i i.github/workflows/inventory.ini logstash.yml
+        run: |
+          set -e
+          ansible-playbook -i inventory.ini logstash.yml -vv
 
       - name: Run Ansible Playbook (Kibana)
-        run: ansible-playbook -i inventory.ini kibana.yml
+        run: |
+          set -e
+          ansible-playbook -i inventory.ini kibana.yml -vv
