@@ -31,8 +31,8 @@ jobs:
       - name: Run Ansible Playbook (Logstash)
         run: |
           set -e
-          ansible-playbook -i .github/workflows/inventory.ini playbook/logstash.yml
-
+           ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i .github/workflows/inventory.ini playbook/logstash.yml
+          
       - name: Run Ansible Playbook (Kibana)
         run: |
           set -e
