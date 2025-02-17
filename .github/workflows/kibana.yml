@@ -1,0 +1,41 @@
+- name: Install Kibana 7.1.x
+  hosts: kibana
+  become: yes
+  vars:
+    elk_version: "7.1.1"
+    kibana_ports:
+      - 5601   # Kibana 포트
+  tasks:
+    - name: Import Elastic GPG Key
+      rpm_key:
+        state: present
+        key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+    - name: Add Kibana Repository
+      yum_repository:
+        name: kibana
+        description: Kibana repository for 7.1.x
+        baseurl: https://artifacts.elastic.co/packages/7.x/yum
+        gpgcheck: yes
+        enabled: yes
+
+    - name: Install Kibana
+      yum:
+        name: "kibana-{{ elk_version }}"
+        state: present
+
+    - name: Enable and Start Kibana Service
+      systemd:
+        name: kibana
+        enabled: yes
+        state: started
+
+    - name: Configure Firewall for Kibana
+      firewalld:
+        port: "{{ item }}/tcp"
+        permanent: yes
+        state: enabled
+      loop: "{{ kibana_ports }}"
+
+    - name: Reload Firewalld
+      command: firewall-cmd --reload

@@ -1,0 +1,55 @@
+- name: Install Logstash and Nginx
+  hosts: logstash
+  become: yes
+  vars:
+    elk_version: "7.1.1"
+    logstash_ports:
+      - 5044   # Filebeat 통신
+      - 9600   # Logstash API
+      - 80     # Nginx 포트
+      - 443    # Nginx SSL 포트
+  tasks:
+    - name: Import Elastic GPG Key
+      rpm_key:
+        state: present
+        key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+    - name: Add Logstash Repository
+      yum_repository:
+        name: logstash
+        description: Logstash repository for 7.1.x
+        baseurl: https://artifacts.elastic.co/packages/7.x/yum
+        gpgcheck: yes
+        enabled: yes
+
+    - name: Install Logstash
+      yum:
+        name: "logstash-{{ elk_version }}"
+        state: present
+
+    - name: Enable and Start Logstash Service
+      systemd:
+        name: logstash
+        enabled: yes
+        state: started
+
+    - name: Install Nginx
+      yum:
+        name: nginx
+        state: present
+
+    - name: Enable and Start Nginx Service
+      systemd:
+        name: nginx
+        enabled: yes
+        state: started
+
+    - name: Configure Firewall for Logstash and Nginx
+      firewalld:
+        port: "{{ item }}/tcp"
+        permanent: yes
+        state: enabled
+      loop: "{{ logstash_ports }}"
+
+    - name: Reload Firewalld
+      command: firewall-cmd --reload

@@ -1,0 +1,42 @@
+- name: Install Elasticsearch 7.1.x
+  hosts: elasticsearch
+  become: yes
+  vars:
+    elk_version: "7.1.1"
+    elasticsearch_ports:
+      - 9200
+      - 9300
+  tasks:
+    - name: Import Elastic GPG Key
+      rpm_key:
+        state: present
+        key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+    - name: Add Elasticsearch Repository
+      yum_repository:
+        name: elasticsearch
+        description: Elasticsearch repository for 7.1.x
+        baseurl: https://artifacts.elastic.co/packages/7.x/yum
+        gpgcheck: yes
+        enabled: yes
+
+    - name: Install Elasticsearch
+      yum:
+        name: "elasticsearch-{{ elk_version }}"
+        state: present
+
+    - name: Enable and Start Elasticsearch Service
+      systemd:
+        name: elasticsearch
+        enabled: yes
+        state: started
+
+    - name: Configure Firewall for Elasticsearch
+      firewalld:
+        port: "{{ item }}/tcp"
+        permanent: yes
+        state: enabled
+      loop: "{{ elasticsearch_ports }}"
+
+    - name: Reload Firewalld
+      command: firewall-cmd --reload
