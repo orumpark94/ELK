@@ -22,18 +22,26 @@ jobs:
             echo "Ansible is already installed"
           fi
 
-      - name: Run Ansible Playbook (Elasticsearch)
+      - name: Setup SSH Key for GitHub Actions (Connect to Ansible Server)
         run: |
-          
-          ansible-playbook -i .github/workflows/inventory.ini playbook/elasticsearch.yml
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 192.168.1.172 >> ~/.ssh/known_hosts
+        shell: bash
 
+      - name: SSH into Ansible Server and Run Playbook
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa root@192.168.1.172 << 'EOF'
+            set -e  # 오류 발생 시 즉시 중단
+            export ANSIBLE_HOST_KEY_CHECKING=False
 
-      - name: Run Ansible Playbook (Logstash)
-        run: |
-          set -e
-           ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i .github/workflows/inventory.ini playbook/logstash.yml
-          
-      - name: Run Ansible Playbook (Kibana)
-        run: |
-          set -e
-          ansible-playbook -i .github/workflows/inventory.ini playbook/kibana.yml -vv
+            # Ensure SSH keys for ELK servers are trusted
+            ssh-keyscan -H 192.168.1.173 >> ~/.ssh/known_hosts
+            ssh-keyscan -H 192.168.1.176 >> ~/.ssh/known_hosts
+
+            # Run Ansible Playbooks
+            ansible-playbook -i .github/workflows/inventory.ini playbook/elasticsearch.yml
+            ansible-playbook -i .github/workflows/inventory.ini playbook/logstash.yml
+            ansible-playbook -i .github/workflows/inventory.ini playbook/kibana.yml
+          EOF
