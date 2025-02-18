@@ -1,4 +1,4 @@
-- name: Install Logstash and Nginx
+- name: Install Java, Logstash, and Nginx
   hosts: logstash
   become: yes
   vars:
@@ -9,6 +9,25 @@
       - 80     # Nginx 포트
       - 443    # Nginx SSL 포트
   tasks:
+    - name: Install Java for Logstash
+      yum:
+        name: java-11-openjdk
+        state: present
+
+    - name: Set Java as default (only if multiple versions exist)
+      command: alternatives --set java /usr/lib/jvm/java-11-openjdk/bin/java
+      ignore_errors: yes  # 오류가 나도 무시 (필요 없을 수도 있음)
+
+    - name: Verify Java Installation
+      command: java -version
+      register: java_check
+      changed_when: false
+      ignore_errors: yes  # 로그 확인용
+
+    - name: Display Java Version
+      debug:
+        msg: "Java Version: {{ java_check.stdout }}"
+
     - name: Import Elastic GPG Key
       rpm_key:
         state: present
@@ -17,7 +36,7 @@
     - name: Add Logstash Repository
       yum_repository:
         name: logstash
-        description: Logstash repository for 7.1.x
+        description: Logstash repository for 7.x
         baseurl: https://artifacts.elastic.co/packages/7.x/yum
         gpgcheck: yes
         enabled: yes
@@ -26,6 +45,29 @@
       yum:
         name: "logstash-{{ elk_version }}"
         state: present
+
+    - name: Ensure Logstash config exists
+      copy:
+        dest: /etc/logstash/conf.d/logstash.conf
+        content: |
+          input { beats { port => 5044 } }
+          output { stdout { codec => rubydebug } }
+      notify: Restart Logstash
+
+    - name: Set Logstash permissions
+      file:
+        path: "{{ item }}"
+        owner: logstash
+        group: logstash
+        mode: '0755'
+        recurse: yes
+      loop:
+        - /etc/logstash
+        - /var/lib/logstash
+        - /var/log/logstash
+
+    - name: Reload systemd daemon
+      command: systemctl daemon-reload
 
     - name: Enable and Start Logstash Service
       systemd:
@@ -44,6 +86,12 @@
         enabled: yes
         state: started
 
+    - name: Ensure Firewalld is running
+      systemd:
+        name: firewalld
+        enabled: yes
+        state: started
+
     - name: Configure Firewall for Logstash and Nginx
       firewalld:
         port: "{{ item }}/tcp"
@@ -53,3 +101,9 @@
 
     - name: Reload Firewalld
       command: firewall-cmd --reload
+
+  handlers:
+    - name: Restart Logstash
+      systemd:
+        name: logstash
+        state: restarted
