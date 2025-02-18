@@ -50,6 +50,32 @@
         enabled: yes
         state: started
 
+    - name: Configure Logstash Pipeline
+      copy:
+        dest: /etc/logstash/conf.d/logstash.conf
+        content: |
+          input {
+            beats {
+              port => 5044
+            }
+          }
+
+          filter {
+            grok {
+              match => { "message" => "%{COMBINEDAPACHELOG}" }
+            }
+          }
+
+          output {
+            elasticsearch {
+              hosts => ["http://192.168.1.172:9200"]
+              index => "logstash-%{+YYYY.MM.dd}"
+            }
+            stdout { codec => rubydebug }
+          }
+        mode: '0644'
+      notify: Restart Logstash
+
     - name: Open Logstash port 5044 in Firewalld
       firewalld:
         port: 5044/tcp
@@ -101,3 +127,9 @@
         name: filebeat
         enabled: yes
         state: started
+
+  handlers:
+    - name: Restart Logstash
+      systemd:
+        name: logstash
+        state: restarted
