@@ -1,38 +1,28 @@
 ---
-- name: Install Java, Logstash, and Nginx (with Dependencies)
+- name: Install and Configure Logstash on Rocky Linux
   hosts: logstash_server
   become: yes
 
   tasks:
-    - name: Install Java for Logstash
+    - name: Install required dependencies
       yum:
-        name: java-11-openjdk
+        name:
+          - epel-release
+          - java-11-openjdk
+          - java-11-openjdk-devel
         state: present
 
-    - name: Register Java in alternatives
-      command: alternatives --install /usr/bin/java java /usr/lib/jvm/java-11-openjdk/bin/java 1
-      args:
-        creates: /etc/alternatives/java
-
-    - name: Set Java as default
-      command: alternatives --set java /usr/lib/jvm/java-11-openjdk/bin/java
-      ignore_errors: yes  # 등록되지 않은 경우를 대비해 에러 무시
-
-    - name: Verify Java Installation
+    - name: Verify Java installation
       command: java -version
-      register: java_version_output
-      changed_when: false  # 🔥 여기가 원래 틀렸던 부분 수정!
-
-    - name: Display Java Version
-      debug:
-        msg: "{{ java_version_output.stdout_lines }}"
+      register: java_version
+      changed_when: false
 
     - name: Import Elastic GPG Key
       rpm_key:
         key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
         state: present
 
-    - name: Add Logstash Repository
+    - name: Add Elastic 7.x YUM Repository
       yum_repository:
         name: elastic-7.x
         description: Elastic repository for 7.x packages
@@ -51,3 +41,15 @@
         name: logstash
         enabled: yes
         state: started
+
+    - name: Open Logstash Port in Firewalld (5044)
+      firewalld:
+        port: 5044/tcp
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    - name: Set SELinux to Permissive Mode
+      selinux:
+        policy: targeted
+        state: permissive
