@@ -1,4 +1,4 @@
-- name: Install Java, Logstash, and Nginx
+- name: Install Java, Logstash, and Nginx (with Dependencies)
   hosts: logstash
   become: yes
   vars:
@@ -12,6 +12,15 @@
     - name: Install Java for Logstash
       yum:
         name: java-11-openjdk
+        state: present
+
+    - name: Install required dependencies for Logstash
+      yum:
+        name:
+          - perl-Digest-SHA
+          - libselinux-utils
+          - rsyslog
+          - policycoreutils-python-utils
         state: present
 
     - name: Set Java as default (only if multiple versions exist)
@@ -41,9 +50,12 @@
         gpgcheck: yes
         enabled: yes
 
-    - name: Install Logstash
+    - name: Install Logstash and Dependencies
       yum:
-        name: "logstash-{{ elk_version }}"
+        name:
+          - "logstash-{{ elk_version }}"
+          - logstash-contrib
+          - logstash-plugin
         state: present
 
     - name: Ensure Logstash config exists
@@ -69,15 +81,27 @@
     - name: Reload systemd daemon
       command: systemctl daemon-reload
 
+    - name: Ensure Logstash service file exists
+      stat:
+        path: /usr/lib/systemd/system/logstash.service
+      register: logstash_service
+
     - name: Enable and Start Logstash Service
       systemd:
         name: logstash
         enabled: yes
         state: started
+      when: logstash_service.stat.exists
 
-    - name: Install Nginx
+    - name: Install Nginx and Dependencies
       yum:
-        name: nginx
+        name:
+          - epel-release
+          - yum-utils
+          - policycoreutils
+          - libsemanage-static
+          - nginx
+          - mod_ssl  # SSL 지원을 위한 추가 패키지
         state: present
 
     - name: Enable and Start Nginx Service
