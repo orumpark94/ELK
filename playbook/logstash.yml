@@ -1,133 +1,24 @@
+---
 - name: Install Java, Logstash, and Nginx (with Dependencies)
-  hosts: logstash
+  hosts: logstash_server
   become: yes
-  vars:
-    elk_version: "7.1.1"
-    logstash_ports:
-      - 5044   # Filebeat 통신
-      - 9600   # Logstash API
-      - 80     # Nginx 포트
-      - 443    # Nginx SSL 포트
+
   tasks:
     - name: Install Java for Logstash
       yum:
         name: java-11-openjdk
         state: present
 
-    - name: Install required dependencies for Logstash
-      yum:
-        name:
-          - perl-Digest-SHA
-          - libselinux-utils
-          - rsyslog
-          - policycoreutils-python-utils
-        state: present
+    - name: Register Java in alternatives
+      command: alternatives --install /usr/bin/java java /usr/lib/jvm/java-11-openjdk/bin/java 1
+      args:
+        creates: /etc/alternatives/java
 
-    - name: Set Java as default (only if multiple versions exist)
+    - name: Set Java as default
       command: alternatives --set java /usr/lib/jvm/java-11-openjdk/bin/java
-      ignore_errors: yes  # 오류가 나도 무시 (필요 없을 수도 있음)
+      ignore_errors: yes  # 등록되지 않은 경우를 대비해 에러 무시
 
     - name: Verify Java Installation
       command: java -version
-      register: java_check
-      changed_when: false
-      ignore_errors: yes  # 로그 확인용
-
-    - name: Display Java Version
-      debug:
-        msg: "Java Version: {{ java_check.stdout }}"
-
-    - name: Import Elastic GPG Key
-      rpm_key:
-        state: present
-        key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-
-    - name: Add Logstash Repository
-      yum_repository:
-        name: logstash
-        description: Logstash repository for 7.x
-        baseurl: https://artifacts.elastic.co/packages/7.x/yum
-        gpgcheck: yes
-        enabled: yes
-
-    - name: Install Logstash and Dependencies
-      yum:
-        name:
-          - "logstash-{{ elk_version }}"
-          - logstash-contrib
-          - logstash-plugin
-        state: present
-
-    - name: Ensure Logstash config exists
-      copy:
-        dest: /etc/logstash/conf.d/logstash.conf
-        content: |
-          input { beats { port => 5044 } }
-          output { stdout { codec => rubydebug } }
-      notify: Restart Logstash
-
-    - name: Set Logstash permissions
-      file:
-        path: "{{ item }}"
-        owner: logstash
-        group: logstash
-        mode: '0755'
-        recurse: yes
-      loop:
-        - /etc/logstash
-        - /var/lib/logstash
-        - /var/log/logstash
-
-    - name: Reload systemd daemon
-      command: systemctl daemon-reload
-
-    - name: Ensure Logstash service file exists
-      stat:
-        path: /usr/lib/systemd/system/logstash.service
-      register: logstash_service
-
-    - name: Enable and Start Logstash Service
-      systemd:
-        name: logstash
-        enabled: yes
-        state: started
-      when: logstash_service.stat.exists
-
-    - name: Install Nginx and Dependencies
-      yum:
-        name:
-          - epel-release
-          - yum-utils
-          - policycoreutils
-          - libsemanage-static
-          - nginx
-          - mod_ssl  # SSL 지원을 위한 추가 패키지
-        state: present
-
-    - name: Enable and Start Nginx Service
-      systemd:
-        name: nginx
-        enabled: yes
-        state: started
-
-    - name: Ensure Firewalld is running
-      systemd:
-        name: firewalld
-        enabled: yes
-        state: started
-
-    - name: Configure Firewall for Logstash and Nginx
-      firewalld:
-        port: "{{ item }}/tcp"
-        permanent: yes
-        state: enabled
-      loop: "{{ logstash_ports }}"
-
-    - name: Reload Firewalld
-      command: firewall-cmd --reload
-
-  handlers:
-    - name: Restart Logstash
-      systemd:
-        name: logstash
-        state: restarted
+      register: java_version_output
+      changed
