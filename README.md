@@ -22,7 +22,7 @@ ansible을 이용하여 Nginx 웹서버,Logstash, kiabana 배포 및 웹서버�
 
 
 # 결과
-아래와 같이 본인 PC로 웹서버 (Logstash-Nginx) 서버에 접근할 경우 kibana 웹 UI를 통해 해당 접근에 대해 확인할 수 있었다.
+아래와 같이 본인 PC로 웹서버 (Logstash-Nginx) 서버에 접근할 경우 kibana에서 해당 LOG를 확인하여 WEB서버에 대한 접근을 확인할 수 있었다.
 
 
 ![image](https://github.com/user-attachments/assets/8e7fb332-6924-4714-a349-3c2c36d0a625)
