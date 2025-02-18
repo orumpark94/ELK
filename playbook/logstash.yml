@@ -17,11 +17,25 @@
       get_url:
         url: "https://artifacts.elastic.co/downloads/logstash/logstash-7.17.0-x86_64.rpm"
         dest: "/tmp/logstash-7.17.0-x86_64.rpm"
+        mode: '0644'
+
+    - name: Verify Logstash RPM Package Exists
+      stat:
+        path: "/tmp/logstash-7.17.0-x86_64.rpm"
+      register: logstash_rpm
+
+    - name: Fail if Logstash RPM was not downloaded
+      fail:
+        msg: "Logstash RPM download failed!"
+      when: not logstash_rpm.stat.exists
 
     - name: Install Logstash from RPM Package
-      command: "rpm -ivh /tmp/logstash-7.17.0-x86_64.rpm"
-      args:
-        creates: "/usr/share/logstash"
+      yum:
+        name: "/tmp/logstash-7.17.0-x86_64.rpm"
+        state: present
+
+    - name: Reload systemd daemon
+      command: systemctl daemon-reload
 
     - name: Enable and Start Logstash Service
       systemd:
@@ -34,10 +48,11 @@
         port: 5044/tcp
         permanent: yes
         state: enabled
-        immediate: yes
+
+    - name: Reload Firewalld
+      command: systemctl restart firewalld
 
     - name: Set SELinux to Permissive Mode
       selinux:
         policy: targeted
         state: permissive
-
