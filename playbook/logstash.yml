@@ -10,26 +10,18 @@
           - epel-release
           - java-11-openjdk
           - java-11-openjdk-devel
+          - wget
         state: present
 
-    - name: Import Elastic GPG Key
-      rpm_key:
-        key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-        state: present
+    - name: Download Logstash RPM Package
+      get_url:
+        url: "https://artifacts.elastic.co/downloads/logstash/logstash-7.17.0-x86_64.rpm"
+        dest: "/tmp/logstash-7.17.0-x86_64.rpm"
 
-    - name: Add Elastic 7.x YUM Repository
-      yum_repository:
-        name: elastic-7.x
-        description: Elastic repository for 7.x packages
-        baseurl: https://artifacts.elastic.co/packages/7.x/yum
-        gpgcheck: yes
-        gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-        enabled: yes
-
-    - name: Install Logstash
-      yum:
-        name: logstash
-        state: present
+    - name: Install Logstash from RPM Package
+      command: "rpm -ivh /tmp/logstash-7.17.0-x86_64.rpm"
+      args:
+        creates: "/usr/share/logstash"
 
     - name: Enable and Start Logstash Service
       systemd:
