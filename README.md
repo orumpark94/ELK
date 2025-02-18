@@ -10,6 +10,10 @@ git action 구성 / (가상서버를 사용할 예정이기에) Self-Hosted Runn
 
 ansible을 이용하여 Nginx 웹서버,Logstash, kiabana 배포 및 웹서버에 대한 로그 수집
 
+#Gitaction 관련 설정 YML파일 위치 - .github/workflows gitaction-check.yaml/inventory.ini 참조
+
+#Ansibl 배포 관련 설정 YML파일 위치 - playbook elasticsearch.yml/kibana.yml/logstash.yml 참조
+
 #주의사항
 
 #각각의 연결은 SSH 연결을 사용하며, 이때 ansible은 ansible 계정을 사용하기 이 문제를 주의할 필요가 있다.
