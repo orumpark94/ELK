@@ -1,5 +1,5 @@
 ---
-- name: Install and Configure Logstash on Rocky Linux
+- name: Install and Configure Logstash, Nginx, and Filebeat on Rocky Linux
   hosts: logstash
   become: yes
 
@@ -11,7 +11,14 @@
           - java-11-openjdk
           - java-11-openjdk-devel
           - wget
+          - nginx
         state: present
+
+    - name: Start and enable Nginx service
+      systemd:
+        name: nginx
+        enabled: yes
+        state: started
 
     - name: Download Logstash RPM Package
       get_url:
@@ -43,9 +50,11 @@
         enabled: yes
         state: started
 
-    - name: Open Logstash Port in Firewalld (5044)
+    - name: Open Logstash and Nginx Ports in Firewalld
       firewalld:
-        port: 5044/tcp
+        port:
+          - 5044/tcp  # Filebeat to Logstash
+          - 80/tcp    # Nginx web server
         permanent: yes
         state: enabled
 
@@ -56,3 +65,35 @@
       selinux:
         policy: targeted
         state: permissive
+
+    - name: Download and Install Filebeat
+      get_url:
+        url: "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.17.0-x86_64.rpm"
+        dest: "/tmp/filebeat-7.17.0-x86_64.rpm"
+        mode: '0644'
+
+    - name: Install Filebeat from RPM Package
+      yum:
+        name: "/tmp/filebeat-7.17.0-x86_64.rpm"
+        state: present
+
+    - name: Configure Filebeat to send logs to Logstash
+      copy:
+        dest: /etc/filebeat/filebeat.yml
+        content: |
+          filebeat.inputs:
+            - type: log
+              enabled: true
+              paths:
+                - /var/log/nginx/access.log
+                - /var/log/nginx/error.log
+          
+          output.logstash:
+            hosts: ["localhost:5044"]
+        mode: '0644'
+
+    - name: Enable and Start Filebeat Service
+      systemd:
+        name: filebeat
+        enabled: yes
+        state: started
