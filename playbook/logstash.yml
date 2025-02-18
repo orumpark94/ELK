@@ -40,3 +40,4 @@
       selinux:
         policy: targeted
         state: permissive
+
