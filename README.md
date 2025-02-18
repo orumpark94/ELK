@@ -1,7 +1,7 @@
 
 # ELK STACK 구성 
 
-# 실습 계획안 
+# 구성 목표 
 
 Git action / Ansible 을 이용하여 ELK Stack 을 구축 하는 것을 목적으로 한다.
 Elastic Search / Logstash / Kibana / Filebeat 사용 예정
