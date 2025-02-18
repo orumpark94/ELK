@@ -12,11 +12,6 @@
           - java-11-openjdk-devel
         state: present
 
-    - name: Verify Java installation
-      command: java -version
-      register: java_version
-      changed_when: false
-
     - name: Import Elastic GPG Key
       rpm_key:
         key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
