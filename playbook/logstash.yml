@@ -50,11 +50,15 @@
         enabled: yes
         state: started
 
-    - name: Open Logstash and Nginx Ports in Firewalld
+    - name: Open Logstash port 5044 in Firewalld
       firewalld:
-        port:
-          - 5044/tcp  # Filebeat to Logstash
-          - 80/tcp    # Nginx web server
+        port: 5044/tcp
+        permanent: yes
+        state: enabled
+
+    - name: Open Nginx port 80 in Firewalld
+      firewalld:
+        port: 80/tcp
         permanent: yes
         state: enabled
 
