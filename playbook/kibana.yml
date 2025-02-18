@@ -1,4 +1,5 @@
-- name: Install Kibana 7.1.x
+---
+- name: Install and Configure Kibana 7.1.x
   hosts: kibana
   become: yes
   vars:
@@ -26,6 +27,22 @@
         name: "kibana-{{ elk_version }}"
         state: present
 
+    - name: Create Kibana log directory
+      file:
+        path: /var/log/kibana
+        state: directory
+        owner: kibana
+        group: kibana
+        mode: '0755'
+
+    - name: Create Kibana log file
+      file:
+        path: /var/log/kibana/kibana.log
+        state: touch
+        owner: kibana
+        group: kibana
+        mode: '0664'
+
     - name: Configure Kibana settings
       copy:
         dest: /etc/kibana/kibana.yml
@@ -33,7 +50,7 @@
           server.port: 5601
           server.host: "0.0.0.0"
           elasticsearch.hosts: ["{{ elasticsearch_host }}"]
-          logging.dest: /var/log/kibana.log
+          logging.dest: /var/log/kibana/kibana.log
           logging.verbose: true
         mode: '0644'
       notify: Restart Kibana
