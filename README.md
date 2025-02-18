@@ -10,6 +10,7 @@ Elastic Search / Logstash / Kibana / Filebeat 사용 예정
 # 구성 순서도 
 
 1. GitHub Actions 설정
+   
 
 ● .github/workflows/gitaction-check.yaml에서 GitHub Actions 설정
 
@@ -19,6 +20,7 @@ Elastic Search / Logstash / Kibana / Filebeat 사용 예정
 
 ● Ansible 플레이북 구성
 
+
 2. playbook/elasticsearch.yml: Elasticsearch 설치 및 설정
 
 ●playbook/kibana.yml: Kibana 설치 및 설정
@@ -26,6 +28,7 @@ Elastic Search / Logstash / Kibana / Filebeat 사용 예정
 ●playbook/logstash.yml: Logstash 및 Filebeat 설치 및 설정
 
 ●Nginx 웹 서버 배포 및 로그 수집 설정 포함
+
 
 3. 서버 연결 및 배포
 
@@ -36,11 +39,13 @@ Elastic Search / Logstash / Kibana / Filebeat 사용 예정
 ●방화벽 및 디렉토리 설정
 
 
+
 4. 각 서비스에 필요한 방화벽 규칙 추가
 
 ●Elasticsearch, Logstash, Kibana 관련 디렉토리 생성 및 권한 설정 포함
 
 ●로그 수집 및 확인
+
 
 5. 웹 서버(Nginx) 로그를 Logstash로 전송
 
