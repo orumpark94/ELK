@@ -107,6 +107,14 @@
         name: "/tmp/filebeat-7.17.0-x86_64.rpm"
         state: present
 
+    - name: Create /var/log/filebeat directory
+      file:
+        path: /var/log/filebeat
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
     - name: Configure Filebeat to send logs to Logstash
       copy:
         dest: /etc/filebeat/filebeat.yml
@@ -117,7 +125,7 @@
               paths:
                 - /var/log/nginx/access.log
                 - /var/log/nginx/error.log
-          
+
           output.logstash:
             hosts: ["localhost:5044"]
         mode: '0644'
