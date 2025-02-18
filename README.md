@@ -4,6 +4,7 @@
 # 구성 목표 
 
 Git action / Ansible 을 이용하여 ELK Stack 을 구축 하는 것을 목적으로 한다.
+
 Elastic Search / Logstash / Kibana / Filebeat 사용 예정
 
 # 구성 순서도 
@@ -52,6 +53,8 @@ Elastic Search / Logstash / Kibana / Filebeat 사용 예정
 ●웹 서버(Nginx)에 접속하여 로그가 정상적으로 수집되는지 확인
 
 ●Kibana에서 Logstash를 통해 수집된 웹 서버 접근 로그 조회
+
+
 #주의사항
 
 #각각의 연결은 SSH 연결을 사용하며, 이때 ansible은 ansible 계정을 사용하기 이 문제를 주의할 필요가 있다.
@@ -60,6 +63,7 @@ Elastic Search / Logstash / Kibana / Filebeat 사용 예정
 
 
 # 결과
+
 아래와 같이 본인 PC로 웹서버 (Logstash-Nginx) 서버에 접근할 경우 kibana에서 해당 LOG를 확인하여 WEB서버에 대한 접근을 확인할 수 있었다.
 
 
