@@ -1,6 +1,6 @@
 ---
 - name: Install and Configure Logstash on Rocky Linux
-  hosts: logstash_server
+  hosts: logstash
   become: yes
 
   tasks:
