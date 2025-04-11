@@ -5,7 +5,11 @@
 
 Git action / Ansible 을 이용하여 ELK Stack 을 구축 하는 것을 목적으로 한다.
 
-Elastic Search / Logstash / Kibana / Filebeat 사용 예정
+# 사용 기술 스택
+
+- **모니터링 프로그램**: Elastic search, Logstash, Kibana, Filebeat
+- **CI/CD**: GitHub Actions, Ansible
+- **인프라**: ESXI 가상화 서버, Rocky Linux
 
 # 구성 순서도 
 
